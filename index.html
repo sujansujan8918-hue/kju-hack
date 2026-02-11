@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Holistic Telehealth Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-header">
+                <h1><i class="fas fa-heartbeat"></i> AI Telehealth</h1>
+                <p>Sign in or create an account to access your healthcare dashboard</p>
+            </div>
+
+            <div class="login-tabs">
+                <button class="login-tab active" data-tab="patient">Patient</button>
+                <button class="login-tab" data-tab="doctor">Doctor</button>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle"></i> <span id="successText"></span>
+            </div>
+
+            <!-- Patient Login Form -->
+            <form class="login-form active" id="patientLoginForm">
+                <div class="form-group">
+                    <label for="patientUsername">Email</label>
+                    <input type="email" id="patientUsername" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientPassword">Password</label>
+                    <input type="password" id="patientPassword" class="form-control" placeholder="Enter your password" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientLoginGender">Gender (for better care)</label>
+                    <select id="patientLoginGender" class="form-control" required>
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+                <button type="submit" class="login-btn" id="patientLoginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Sign in as Patient
+                </button>
+                <div class="form-footer">
+                    <p>First time visiting the site ?  <a id="showPatientRegister">kindly Create an account for further processing </a></p>
+                </div>
+            </form>
+
+            <!-- Patient Registration Form -->
+            <form class="register-form" id="patientRegisterForm">
+                <div class="form-group">
+                    <label for="patientRegName">Full Name</label>
+                    <input type="text" id="patientRegName" class="form-control" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientRegEmail">Email</label>
+                    <input type="email" id="patientRegEmail" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientRegPassword">Password</label>
+                    <input type="password" id="patientRegPassword" class="form-control" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientRegConfirmPassword">Confirm Password</label>
+                    <input type="password" id="patientRegConfirmPassword" class="form-control" placeholder="Confirm your password" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientRegAge">Age</label>
+                    <input type="number" id="patientRegAge" class="form-control" placeholder="Enter your age" min="1" max="120" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientRegGender">Gender</label>
+                    <select id="patientRegGender" class="form-control" required>
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+                <button type="submit" class="register-btn" id="patientRegisterBtn">
+                    <i class="fas fa-user-plus"></i> Create Patient Account
+                </button>
+                <div class="form-footer">
+                    <p>Already have an account? <a id="showPatientLogin">Sign in</a></p>
+                </div>
+            </form>
+
+            <!-- Doctor Login Form -->
+            <form class="login-form" id="doctorLoginForm">
+                <div class="form-group">
+                    <label for="doctorUsername"> Enter the Doctor ID or Email</label>
+                    <input type="text" id="doctorUsername" class="form-control" placeholder="Enter your Doctor ID or email" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorPassword">Password</label>
+                    <input type="password" id="doctorPassword" class="form-control" placeholder="Enter your password" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorLoginGender">Gender</label>
+                    <select id="doctorLoginGender" class="form-control" required>
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+                <button type="submit" class="login-btn" id="doctorLoginBtn">
+                    <i class="fas fa-stethoscope"></i> Sign in as Doctor
+                </button>
+                <div class="form-footer">
+                    <p>First time visiting Didn't have id <a id="showDoctorRegister">Register here</a></p>
+                </div>
+            </form>
+
+            <!-- Doctor Registration Form -->
+            <form class="register-form" id="doctorRegisterForm">
+                <div class="form-group">
+                    <label for="doctorRegName">Full Name</label>
+                    <input type="text" id="doctorRegName" class="form-control" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorRegEmail">Email</label>
+                    <input type="email" id="doctorRegEmail" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorRegSpecialty">Specialty</label>
+                    <select id="doctorRegSpecialty" class="form-control" required>
+                        <option value="">Select specialty</option>
+                        <option value="Psychiatry">Psychiatry & Mental Health</option>
+                        <option value="General Practice">General Practice</option>
+                        <option value="Neurology">Neurology</option>
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Dermatology">Dermatology</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="orthocare">orthocare</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doctorRegGender">Gender</label>
+                    <select id="doctorRegGender" class="form-control" required>
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doctorRegLicense">Medical License Number</label>
+                    <input type="text" id="doctorRegLicense" class="form-control" placeholder="Enter your license number" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorRegPassword">Password</label>
+                    <input type="password" id="doctorRegPassword" class="form-control" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorRegConfirmPassword">Confirm Password</label>
+                    <input type="password" id="doctorRegConfirmPassword" class="form-control" placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="register-btn" id="doctorRegisterBtn">
+                    <i class="fas fa-user-md"></i> Register as Doctor
+                </button>
+                <div class="form-footer">
+                    <p>Already have an account? <a id="showDoctorLogin">Sign in</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Navigation -->
+        <nav>
+            <div class="container nav-container">
+                <div class="logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <span>AI Consultation</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">JD</div>
+                    <div class="user-name" id="userName">Dr. Jennifer Davis</div>
+                    <div class="user-gender" id="userGender"></div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+                <div class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#problem">Problem</a></li>
+                    <li><a href="#solution">Solution</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Header -->
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <h1>AI-Powered Holistic Telehealth</h1>
+                    <p class="tagline">Real-time emotion recognition, speech analysis, and personalized doctor recommendations for comprehensive patient care.</p>
+                    <div>
+                        <a href="#demo" class="btn">Try Live Demo</a>
+                        <a href="#solution" class="btn btn-outline">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Problem Section -->
+        <section id="problem">
+            <div class="container">
+                <h2 class="section-title-center">The Limitations of Current Telehealth</h2>
+                <p class="section-intro">Traditional telehealth fails to capture the complete patient experience.</p>
+                <div class="problem-container">
+                    <div class="problem-card">
+                        <i class="fas fa-frown"></i>
+                        <h3>Emotional Blindness</h3>
+                        <p>Current systems cannot assess emotional state during consultations.</p>
+                    </div>
+                    <div class="problem-card">
+                        <i class="fas fa-user-md"></i>
+                        <h3>Generic Recommendations</h3>
+                        <p>Platforms offer generalized rather than personalized doctor matches.</p>
+                    </div>
+                    <div class="problem-card">
+                        <i class="fas fa-comment-medical"></i>
+                        <h3>Limited Speech Analysis</h3>
+                        <p>Most treat speech as simple audio without analyzing patterns.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution Section -->
+        <section id="solution" style="background-color: #5804f3;">
+            <div class="container">
+                <h2 class="section-title-center">Our AI-Driven Solution</h2>
+                <p class="section-intro">Advanced ML techniques for comprehensive telehealth.</p>
+                <div class="solution-container">
+                    <div class="solution-card">
+                        <h3><span>1</span> Temporal CNN for Emotion Recognition</h3>
+                        <p>Real-time facial expression analysis during video consultations.</p>
+                    </div>
+                    <div class="solution-card">
+                        <h3><span>2</span> CNN for Speech Pattern Analysis</h3>
+                        <p>Vocal pattern detection for stress, fatigue, and emotional distress.</p>
+                    </div>
+                    <div class="solution-card">
+                        <h3><span>3</span> NLP for Semantic Understanding</h3>
+                        <p>Identifying key symptoms and concerns from patient speech.</p>
+                    </div>
+                    <div class="solution-card">
+                        <h3><span>4</span> Content-Based Doctor Filtering</h3>
+                        <p>Personalized matching with healthcare professionals.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section id="features">
+            <div class="container">
+                <h2 class="section-title-center">Key Features</h2>
+                <p class="section-intro">Multiple AI technologies for comprehensive care.</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-video"></i></div>
+                        <h3>Real-time Emotion Detection</h3>
+                        <p>TCNN analyzes facial expressions during consultations.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-microphone"></i></div>
+                        <h3>Speech Pattern Analysis</h3>
+                        <p>CNN detects vocal patterns indicating stress and fatigue.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-language"></i></div>
+                        <h3>Natural Language Processing</h3>
+                        <p>NLP extracts semantic meaning from patient speech.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-user-md"></i></div>
+                        <h3>Personalized Doctor Matching</h3>
+                        <p>Content-based filtering for personalized recommendations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Demo -->
+        <section id="demo" style="background-color: #4904f9;">
+            <div class="container">
+                <h2 class="section-title-center">Live Platform Demo</h2>
+                <p class="section-intro">Experience AI-powered telehealth with real emotion detection.</p>
+                
+                <div class="dashboard-container">
+                    <div class="dashboard-header">
+                        <h3>Holistic Telehealth Dashboard</h3>
+                        <div class="status-indicators">
+                            <div class="status-item">
+                                <div class="status-icon active"><i class="fas fa-wifi"></i></div>
+                                <div class="status-text">AI Active</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-tabs">
+                        <button class="dashboard-tab active" data-tab="emotion">Emotion Detection</button>
+                        <button class="dashboard-tab" data-tab="speech">Speech Analysis</button>
+                        <button class="dashboard-tab" data-tab="recommendations">Doctor Recommendations</button>
+                        <button class="dashboard-tab" data-tab="consultation">Virtual Consultation</button>
+                    </div>
+                    
+                    <!-- Emotion Detection Tab -->
+                    <div class="dashboard-content active" id="emotion-tab">
+                        <div>
+                            <h3>Real-time Emotion Recognition</h3>
+                            <div class="video-container">
+                                <video id="videoElement" autoplay playsinline></video>
+                                <div class="video-overlay" id="videoOverlay">
+                                    <i class="fas fa-user-circle" style="font-size: 3rem;"></i>
+                                    <p id="videoStatus">Allow camera access to begin</p>
+                                </div>
+                                <canvas id="canvasElement" style="display:none;"></canvas>
+                            </div>
+                            
+                            <div class="emotion-results">
+                                <div class="emotion-item happiness">
+                                    <span class="emotion-label">Happiness</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="happinessBar" style="width: 0%"></div>
+                                    </div>
+                                    <div id="happinessValue">0%</div>
+                                </div>
+                                <div class="emotion-item neutral">
+                                    <span class="emotion-label">Neutral</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="neutralBar" style="width: 0%"></div>
+                                    </div>
+                                    <div id="neutralValue">0%</div>
+                                </div>
+                                <div class="emotion-item sadness">
+                                    <span class="emotion-label">Sadness</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="sadnessBar" style="width: 0%"></div>
+                                    </div>
+                                    <div id="sadnessValue">0%</div>
+                                </div>
+                                <div class="emotion-item anger">
+                                    <span class="emotion-label">Anger</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="angerBar" style="width: 0%"></div>
+                                    </div>
+                                    <div id="angerValue">0%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="controls">
+                                <button class="control-btn btn-start" id="startVideo">
+                                    <i class="fas fa-play"></i> Start Camera
+                                </button>
+                                <button class="control-btn btn-stop" id="stopVideo" disabled>
+                                    <i class="fas fa-stop"></i> Stop Camera
+                                </button>
+                                <button class="control-btn btn-analyze" id="analyzeEmotion">
+                                    <i class="fas fa-brain"></i> Analyze Emotion
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3>Recommended Doctors</h3>
+                            <div class="doctor-list">
+                                <div class="doctor-card selected" data-doctor="1">
+                                    <div class="doctor-avatar">JD</div>
+                                    <div class="doctor-info">
+                                        <h4>Dr. palsamy</h4>
+                                        <div class="doctor-specialty">Psychiatry & Mental Health</div>
+                                        <div class="doctor-rating">
+                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                            <span>4.7</span>
+                                        </div>
+                                        <div class="match-score">Match: 92%</div>
+                                    </div>
+                                </div>
+                                <div class="doctor-card" data-doctor="2">
+                                    <div class="doctor-avatar">MS</div>
+                                    <div class="doctor-info">
+                                        <h4>Dr. kumarasamy</h4>
+                                        <div class="doctor-specialty">General Practice</div>
+                                        <div class="doctor-rating">
+                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                            <span>4.2</span>
+                                        </div>
+                                        <div class="match-score">Match: 87%</div>
+                                    </div>
+                                </div>
+                                <div class="doctor-card" data-doctor="3">
+                                    <div class="doctor-avatar">AR</div>
+                                    <div class="doctor-info">
+                                        <h4>Dr. steve rogers</h4>
+                                        <div class="doctor-specialty">Neurology</div>
+                                        <div class="doctor-rating">
+                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                            <span>5.0</span>
+                                        </div>
+                                        <div class="match-score">Match: 85%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="controls">
+                                <button class="control-btn btn-analyze" id="scheduleConsultation">
+                                    <i class="fas fa-calendar-check"></i> Schedule Consultation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Speech Analysis Tab -->
+                    <div class="dashboard-content" id="speech-tab">
+                        <div>
+                            <h3>Speech Pattern Analysis</h3>
+                            <div class="speech-meter">
+                                <div class="meter-label">
+                                    <span>Stress Level</span>
+                                    <span id="stressValue">0%</span>
+                                </div>
+                                <div class="meter-bar">
+                                    <div class="meter-fill" id="stressBar" style="width: 0%; background: var(--danger);"></div>
+                                </div>
+                            </div>
+                            <div class="speech-meter">
+                                <div class="meter-label">
+                                    <span>Fatigue Detection</span>
+                                    <span id="fatigueValue">0%</span>
+                                </div>
+                                <div class="meter-bar">
+                                    <div class="meter-fill" id="fatigueBar" style="width: 0%; background: var(--warning);"></div>
+                                </div>
+                            </div>
+                            <div class="speech-meter">
+                                <div class="meter-label">
+                                    <span>Emotional Distress</span>
+                                    <span id="emotionalValue">0%</span>
+                                </div>
+                                <div class="meter-bar">
+                                    <div class="meter-fill" id="emotionalBar" style="width: 0%; background: var(--accent);"></div>
+                                </div>
+                            </div>
+                            <div id="speechTranscript" style="
+                                background: rgb(129, 5, 245);
+                                padding: 20px;
+                                border-radius: var(--radius);
+                                margin-top: 20px;
+                                font-style: italic;
+                                border-left: 4px solid var(--primary);
+                            ">
+                                "I've been having headaches for the past week, and I'm feeling more tired than usual."
+                            </div>
+                            <div class="controls">
+                                <button class="control-btn btn-start" id="startRecording">
+                                    <i class="fas fa-microphone"></i> Start Recording
+                                </button>
+                                <button class="control-btn btn-stop" id="stopRecording" disabled>
+                                    <i class="fas fa-microphone-slash"></i> Stop Recording
+                                </button>
+                                <button class="control-btn btn-analyze" id="analyzeSpeech">
+                                    <i class="fas fa-language"></i> Analyze Speech
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Speech Analysis Results</h3>
+                            <div class="doctor-list">
+                                <div class="doctor-card selected">
+                                    <div class="doctor-avatar">TC</div>
+                                    <div class="doctor-info">
+                                        <h4>Dr. Thomas Chen</h4>
+                                        <div class="doctor-specialty">Stress Management</div>
+                                        <div class="match-score">Match: 94%</div>
+                                        <p style="font-size: 0.8rem; color: var(--gray); margin-top: 5px;">Specializes in stress-related symptoms</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Consultation Tab -->
+                    <div class="dashboard-content" id="consultation-tab">
+                        <div>
+                            <h3>Virtual Consultation</h3>
+                            <div class="video-container">
+                                <div class="video-overlay">
+                                    <i class="fas fa-user-md" style="font-size: 3rem;"></i>
+                                    <p>Secure consultation with Dr. Jennifer Davis</p>
+                                </div>
+                            </div>
+                            <div class="chat-container">
+                                <div class="chat-messages" id="chatMessages">
+                                    <div class="message message-doctor">
+                                        <div class="message-content">Hello! How are you feeling today?</div>
+                                    </div>
+                                    <div class="message message-patient">
+                                        <div class="message-content">Hi Doctor, I've been having headaches.</div>
+                                    </div>
+                                </div>
+                                <div class="chat-input">
+                                    <input type="text" id="chatInput" placeholder="Type your message...">
+                                    <button id="sendMessage" class="btn" style="padding: 10px 20px;">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Consultation Info</h3>
+                            <div class="status-indicators">
+                                <div class="status-item">
+                                    <div class="status-icon active"><i class="fas fa-shield-alt"></i></div>
+                                    <div class="status-text">Connection Secure</div>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-icon active"><i class="fas fa-robot"></i></div>
+                                    <div class="status-text">AI Monitoring Active</div>
+                                </div>
+                            </div>
+                            <div class="controls">
+                                <button class="control-btn btn-start" id="startConsultation">
+                                    <i class="fas fa-video"></i> Start Consultation
+                                </button>
+                                <button class="control-btn btn-stop" id="endConsultation" disabled>
+                                    <i class="fas fa-phone-slash"></i> End Consultation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="footer-container">
+                    <div>
+                        <h3 style="color: rgb(97, 9, 239);">AI Telehealth Platform</h3>
+                        <p>Advanced AI for comprehensive remote healthcare.</p>
+                    </div>
+                    <div>
+                        <h3 style="color: rgb(129, 5, 245);">Technologies</h3>
+                        <p>Temporal CNN • CNN • NLP • ML Filtering</p>
+                    </div>
+                </div>
+                <div class="copyright">
+                    <p>&copy; 2023 AI Telehealth Platform. Demo for educational purposes.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
